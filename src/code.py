@@ -8,13 +8,12 @@ weather for your location... and display it on a screen!
 if you can find something that spits out JSON data, we can display it
 """
 import sys
-import time
 import board
+import time
 from adafruit_pyportal import PyPortal
 cwd = ("/"+__file__).rsplit('/', 1)[0] # the current working directory (where this file is)
 sys.path.append(cwd)
-#import openweather_graphics  # pylint: disable=wrong-import-position
-import netatmo_display
+import netatmo_display  # pylint: disable=wrong-import-position
 
 # Get wifi details and more from a secrets.py file
 try:
@@ -23,16 +22,10 @@ except ImportError:
     print("WiFi secrets are kept in secrets.py, please add them there!")
     raise
 
-# Use cityname, country code where countrycode is ISO3166 format.
-# E.g. "New York, US" or "London, GB"
-LOCATION = "Molde, NO"
-
 # Set up where we'll be fetching data from
-DATA_SOURCE = "http://api.openweathermap.org/data/2.5/weather?q="+LOCATION
-DATA_SOURCE += "&appid="+secrets['openweather_token']
+DATA_SOURCE = "http://192.168.1.19:8080/api/display"
 # You'll need to get a token from openweather.org, looks like 'b6907d289e10d714a6e88b30761fae22'
 DATA_LOCATION = []
-
 
 # Initialize the pyportal object and let us know what data to fetch and where
 # to display it
@@ -41,11 +34,11 @@ pyportal = PyPortal(url=DATA_SOURCE,
                     status_neopixel=board.NEOPIXEL,
                     default_bg=0x000000)
 
-#gfx = openweather_graphics.OpenWeather_Graphics(pyportal.splash, am_pm=False, celsius=True)
 gfx = netatmo_display.Netatmo_Display(pyportal.splash)
 
 localtile_refresh = None
 weather_refresh = None
+mode = "weekday"
 while True:
     # only query the online time once per hour (and on first run)
     if (not localtile_refresh) or (time.monotonic() - localtile_refresh) > 3600:
@@ -62,12 +55,21 @@ while True:
         try:
             value = pyportal.fetch()
             print("Response is", value)
-            #gfx.display_weather(value)
-            gfx.draw_display()
+            gfx.draw_display(value)
+            gfx.clear_error()
             weather_refresh = time.monotonic()
-        except RuntimeError as e:
-            print("Some error occured, retrying! -", e)
+        except RuntimeError as re:
+            print("Some error occured, retrying! -", re)
+            gfx.draw_error()
+            continue
+        except TimeoutError as te:
+            print("Timeout - ", te)
+            gfx.draw_error()
             continue
 
-    gfx.update_time()
-    time.sleep(30)  # wait 30 seconds before updating anything again
+    gfx.update_time(mode)
+    updateTime = .5
+    if mode == "weekday":
+        updateTime = 30
+
+    time.sleep(updateTime)  # wait X seconds before updating anything again

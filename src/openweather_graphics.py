@@ -89,9 +89,9 @@ class OpenWeather_Graphics(displayio.Group):
         temperature = weather['main']['temp'] - 273.15 # its...in kelvin
         print(temperature)
         if self.celsius:
-            self.temp_text.text = "{0:.2} °C".format(temperature)
+            self.temp_text.text = "%d °C" % temperature
         else:
-            self.temp_text.text = "{0:.2} °F".format((temperature * 9 / 5) + 32)
+            self.temp_text.text = "%d °F" % ((temperature * 9 / 5) + 32)
 
         description = weather['weather'][0]['description']
         description = description[0].upper() + description[1:]

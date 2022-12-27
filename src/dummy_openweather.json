@@ -1,0 +1,43 @@
+{
+    "timezone": -18000,
+    "sys": {
+        "type": 1,
+        "sunrise": 1672057124,
+        "country": "US",
+        "id": 5141,
+        "sunset": 1672090438
+    },
+    "base": "stations",
+    "main": {
+        "temp_min": 265.93,
+        "pressure": 1025,
+        "feels_like": 260.43,
+        "humidity": 57,
+        "temp_max": 268.41,
+        "temp": 266.99
+    },
+    "visibility": 10000,
+    "id": 5125771,
+    "clouds": {
+        "all": 0
+    },
+    "coord": {
+        "lon": -73.9662,
+        "lat": 40.7834
+    },
+    "name": "Manhattan",
+    "cod": 200,
+    "weather": [
+        {
+            "id": 800,
+            "icon": "01d",
+            "main": "Clear",
+            "description": "clear sky"
+        }
+    ],
+    "dt": 1672065528,
+    "wind": {
+        "speed": 5.14,
+        "deg": 290
+    }
+}
