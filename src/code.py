@@ -1,12 +1,3 @@
-# SPDX-FileCopyrightText: 2019 Limor Fried for Adafruit Industries
-#
-# SPDX-License-Identifier: MIT
-
-"""
-This example queries the Open Weather Maps site API to find out the current
-weather for your location... and display it on a screen!
-if you can find something that spits out JSON data, we can display it
-"""
 import sys
 import board
 import time
@@ -24,18 +15,16 @@ except ImportError:
 
 # Set up where we'll be fetching data from
 DATA_SOURCE = "http://192.168.1.19:8080/api/display"
-# You'll need to get a token from openweather.org, looks like 'b6907d289e10d714a6e88b30761fae22'
 DATA_LOCATION = []
 
 # Initialize the pyportal object and let us know what data to fetch and where
 # to display it
-pyportal = PyPortal(url=DATA_SOURCE,
+pyportal = PyPortal(
+                    url=DATA_SOURCE,
                     json_path=DATA_LOCATION,
                     status_neopixel=board.NEOPIXEL,
                     default_bg=0x000000)
-
 gfx = netatmo_display.Netatmo_Display(pyportal.splash)
-
 localtile_refresh = None
 weather_refresh = None
 mode = "weekday"
@@ -67,7 +56,7 @@ while True:
             gfx.draw_error()
             continue
 
-    gfx.update_time(mode)
+    gfx.draw_time()
     updateTime = .5
     if mode == "weekday":
         updateTime = 30
