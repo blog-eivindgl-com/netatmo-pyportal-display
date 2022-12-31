@@ -21,13 +21,13 @@ DATA_LOCATION = []
 # to display it
 pyportal = PyPortal(
                     url=DATA_SOURCE,
-                    json_path=DATA_LOCATION,
                     status_neopixel=board.NEOPIXEL,
                     default_bg=0x000000)
 gfx = netatmo_display.Netatmo_Display(pyportal.splash)
 localtile_refresh = None
 weather_refresh = None
 mode = "weekday"
+reload_count = 0
 while True:
     # only query the online time once per hour (and on first run)
     if (not localtile_refresh) or (time.monotonic() - localtile_refresh) > 3600:
@@ -43,7 +43,8 @@ while True:
     if (not weather_refresh) or (time.monotonic() - weather_refresh) > 600:
         try:
             value = pyportal.fetch()
-            print("Response is", value)
+            reload_count = reload_count + 1
+            print("#%d: Response is" % reload_count, value)
             gfx.draw_display(value)
             gfx.clear_error()
             weather_refresh = time.monotonic()
