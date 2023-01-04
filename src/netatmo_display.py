@@ -1,7 +1,7 @@
 import time
 import json
 import displayio
-from adafruit_display_text.bitmap_label import Label
+from adafruit_display_text.label import Label
 from adafruit_bitmap_font import bitmap_font
 import temperature_widget  # pylint: disable=wrong-import-position
 import humidity_widget  # pylint: disable=wrong-import-position
