@@ -1,5 +1,5 @@
 import displayio
-from adafruit_display_text.label import Label
+from adafruit_display_text.bitmap_label import Label
 
 class Temperature_Widget(displayio.Group):
     def __init__(self, cwd, description_font, decimal_font, int_font):
