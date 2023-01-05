@@ -20,7 +20,7 @@ class Humidity_Widget(displayio.Group):
 
         self._weather_icon_sprite = None
         self._weather_icon_file = None
-        self._weather_icon_group = displayio.Group(x=0, y=0)
+        self._weather_icon_group = displayio.Group(x=0, y=0, scale=1)
         self.append(self._weather_icon_group)
         self.set_icon(self._day_sunny)
     
