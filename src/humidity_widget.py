@@ -36,6 +36,7 @@ class Humidity_Widget(displayio.Group):
         self.humidity = int(widget['value'])
         self.battery_level = widget['batteryLevel']
         self.sunOrMoon = widget['sunOrMoon']
+        self.outTemp = widget['outTemp']
         if (self.sunOrMoon == 'sun'):
             if self.humidity <= 60:
                 self.set_icon(self._day_sunny)
@@ -46,10 +47,15 @@ class Humidity_Widget(displayio.Group):
             elif self.humidity <= 80:
                 self.set_icon(self._day_sprinkle)
             elif self.humidity <= 85:
-                self.set_icon(self._day_showers)
+                if self.outTemp > 1:
+                    self.set_icon(self._day_showers)
+                else:
+                    self.set_icon(self._day_sleet)
             else:
-                self.set_icon(self._day_rain)
-                # TODO: Look at temperature to see if it's snow instead of rain
+                if self.outTemp > 0:
+                    self.set_icon(self._day_rain)
+                else:
+                    self.set_icon(self._day_snow)
         else:
             if self.humidity <= 60:
                 self.set_icon(self._night_clear)
@@ -60,10 +66,15 @@ class Humidity_Widget(displayio.Group):
             elif self.humidity <= 80:
                 self.set_icon(self._night_sprinkle)
             elif self.humidity <= 85:
-                self.set_icon(self._night_showers)
+                if self.outTemp > 1:
+                    self.set_icon(self._night_showers)
+                else:
+                    self.set_icon(self._night_sleet)
             else:
-                self.set_icon(self._night_rain)
-                # TODO: Look at temperature to see if it's snow instead of rain
+                if self.outTemp > 0:
+                    self.set_icon(self._night_rain)
+                else:
+                    self.set_icon(self._night_snow)
 
     def set_icon(self, filename):
         print("Set weather icon to", filename)
