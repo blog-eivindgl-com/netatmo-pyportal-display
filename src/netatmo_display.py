@@ -13,14 +13,14 @@ small_font = cwd+"/fonts/Arial-12.bdf"
 time_font = cwd+"/fonts/Arial-16.bdf"
 tempInt_font = cwd+"/fonts/BebasNeue-Regular-128.bdf"
 tempDec_font = cwd+"/fonts/BebasNeue-Regular-64.bdf"
+DISPLAY_WIDTH = 480
+DISPLAY_HEIGHT = 320
+TEMP_WIDGET_WIDTH = 160
+TEMP_WIDGET_HEIGHT = 160
 
 class Netatmo_Display(displayio.Group):
     def __init__(self, root_group):
         super().__init__()
-        DISPLAY_WIDTH = 480
-        DISPLAY_HEIGHT = 320
-        TEMP_WIDGET_WIDTH = 160
-        TEMP_WIDGET_HEIGHT = 160
 
         root_group.append(self)
         self._icon_group = displayio.Group(x=40)
@@ -99,3 +99,15 @@ class Netatmo_Display(displayio.Group):
 
     def clear_error(self):
         self.error_text.text = ""
+
+    def touch(self, touch_point):
+        print(touch_point)
+        x, y, pressure = touch_point
+        if self.temp_widget_top.x <= x and self.temp_widget_bottom.y >= y:
+            self.temp_widget_top.change_mode()
+        elif self.temp_widget_top.x <= x and self.temp_widget_bottom.y <= y:
+            self.temp_widget_bottom.change_mode()
+        elif self.temp_widget_bottom.x >= x and self.time_widget.y <= y:
+            self.time_widget.change_mode()
+        else:
+            self.humidity_widget.change_mode()
