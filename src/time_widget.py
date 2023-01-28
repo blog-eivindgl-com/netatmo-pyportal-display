@@ -66,3 +66,12 @@ class Time_Widget(displayio.Group):
             date_str = "%d/%d" % (day, month)
         #print(date_str)
         self.date_text.text = date_str
+    
+    def change_mode(self):
+        print("Time change mode")
+        if self.mode == "weekday":
+            self.mode = "seconds"
+        else:
+            self.mode = "weekday"
+        self.update_time()
+        self.update_date()

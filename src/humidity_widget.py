@@ -93,3 +93,6 @@ class Humidity_Widget(displayio.Group):
         )
 
         self._weather_icon_group.append(self._weather_icon_sprite)
+
+    def change_mode(self):
+        print("Humidity change mode")
