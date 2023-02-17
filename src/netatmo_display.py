@@ -6,6 +6,7 @@ from adafruit_bitmap_font import bitmap_font
 import temperature_widget  # pylint: disable=wrong-import-position
 import humidity_widget  # pylint: disable=wrong-import-position
 import time_widget  # pylint: disable=wrong-import-position
+import wind_widget # pylint: disable=wrong-import-positiion
 
 cwd = ("/"+__file__).rsplit('/', 1)[0] # the current working directory (where this file is)
 
@@ -46,6 +47,20 @@ class Netatmo_Display(displayio.Group):
         self.humidity_widget.x = 0
         self.humidity_widget.y = 0
 
+        self.wind_widget = wind_widget.Wind_Widget(self.small_font)
+        self._icon_group.append(self.wind_widget)
+        self.wind_widget.x = 0
+        self.wind_widget.y = 160
+        self.strength = float(0)
+        self.angle = float(0)
+
+        self.wind_widget_gusts = wind_widget.Wind_Widget(self.small_font)
+        self._icon_group.append(self.wind_widget_gusts)
+        self.wind_widget_gusts.x = 160
+        self.wind_widget_gusts.y = 160
+        self.strength = float(0)
+        self.angle = float(0)
+
         self.temp_widget_top = temperature_widget.Temperature_Widget(cwd, self.small_font, self.tempDec_font, self.tempInt_font)
         self._text_group.append(self.temp_widget_top)
         self.temp_widget_top.x = DISPLAY_WIDTH - TEMP_WIDGET_WIDTH
@@ -56,7 +71,7 @@ class Netatmo_Display(displayio.Group):
         self.temp_widget_bottom.x = DISPLAY_WIDTH - TEMP_WIDGET_WIDTH
         self.temp_widget_bottom.y = TEMP_WIDGET_HEIGHT + 30
 
-        self.time_widget = time_widget.Time_Widget(self.time_font)
+        self.time_widget = time_widget.Time_Widget(self.time_font, mode="weekday")
         self._text_group.append(self.time_widget)
         self.time_widget.x = 0
         self.time_widget.y = 240
@@ -75,7 +90,19 @@ class Netatmo_Display(displayio.Group):
                 self.draw_temperature(widget)
             elif widget['type'] == "humidity":
                 self.draw_humidity(widget)
-        self.draw_time()
+            elif widget['type'] == "wind":
+                self.draw_wind(widget)
+
+    def animate_wind(self):
+        # TODO: remove this fake wind widget
+        self.strength = float(self.strength) + 0.2
+        self.angle = float(self.angle) + 0.2
+        if self.strength >= 34:
+            self.strength = float(0)
+        if self.angle >= 360:
+            self.angle = float(0)
+        wind = json.loads('{ "type": "wind", "value": "%fm/s", "angle": %f, "batteryLevel": 88 }' % (self.strength, self.angle))
+        self.draw_wind(wind)
 
     def draw_temperature(self, widget):
         if widget['description'] == "Vestveggen ute":
@@ -85,6 +112,12 @@ class Netatmo_Display(displayio.Group):
     
     def draw_humidity(self, widget):
         self.humidity_widget.draw_widget(widget)
+
+    def draw_wind(self, widget):
+        if (widget['description'] == "Kast"):
+            self.wind_widget_gusts.draw_widget(widget)
+        else:
+            self.wind_widget.draw_widget(widget)
 
     def draw_time(self):
         self.time_widget.draw_widget()
