@@ -12,49 +12,73 @@
   <script>
     const canvas = document.getElementById("wind-canvas");
     const ctx = canvas.getContext("2d");
-    
+
+    const fontSize = 12; // Label font size
     const cW = canvas.width;
     const cH = canvas.height;
+    const widgetW = cW - 200;
+    const widgetH = cW - 200;
+    const widgetX = cW / 2 - widgetW / 2; 
+    const widgetY = cH / 2 - widgetH / 2; 
     const mX = cW / 2;  // Center (middle) X
     const mY = cH / 2;  // Center (middle) Y
-    const aL = 100; // Arrow length
+    const aL = Math.min(widgetH - fontSize - 30, widgetW); // Arrow length
     const aW = 30; // Arrow width
     const aS = 10; // Arrow stretch
     const gap = 7.0; // Space between strengt indicators
     const iL = aL / 3; // Indicator length
     const siL = iL * 2 / 3; // Small indicator length
     
-    function drawWindSymbol(strength, angle) {
-        // Clear the canvas
-        ctx.clearRect(0, 0, cW, cH);
+    function drawWidget(strength, angle) {
+        // Draw a light border around the limited widget space
+        ctx.strokeStyle = "rgb(192, 192, 192)";
+        ctx.fillStyle = "rgb(0, 0, 0)";
+        ctx.strokeRect(widgetX, widgetY, widgetW, widgetH);
+        ctx.strokeStyle = "rgb(0, 0, 0)";
+
+        // Clear and redraw the widget content
+        ctx.clearRect(widgetX + 1, widgetY + 1, widgetW - 2, widgetH - 2);
+        drawWindSymbol(strength, angle, fontSize + 2);
+
+        // Draw text
+        ctx.font = `${fontSize}px serif`;
+        ctx.textAlign = "center";
+        const text = `${strength.toFixed(1)}m/s`;
+        const textM = ctx.measureText(text);
+        const textX = widgetX + widgetW / 2;
+        const textY = widgetY + widgetH;
+        ctx.fillText(text, textX, textY);
+    }
+
+    function createObjects(strength, angle) {
+        let guiObjects = [];
         let aX = mX + aL * Math.cos(angle);
         let aY = mY + aL * Math.sin(angle);
 
-        function drawWindArrow() {
-            ctx.strokeStyle = "rgb(0, 0, 0)";
-            ctx.fillStyle = "rgb(0, 0, 0)";
-
-            // Draw the wind arrow
-            ctx.beginPath();
-            ctx.moveTo(mX, mY);
-            ctx.lineTo(aX, aY);
-            ctx.stroke();
+        function createWindArrow() {
+            // Create the wind arrow
+            let windArrow = [];
+            windArrow.push("stroke");
+            windArrow.push({ x: mX, y: mY});
+            windArrow.push({ x: aX, y: aY });
 
             // Draw the arrowhead
-            ctx.beginPath();
-            ctx.moveTo(aX, aY);
-            ctx.lineTo(
-                aX - aW * Math.cos(angle + Math.PI / aS),
-                aY - aW * Math.sin(angle + Math.PI / aS)
-            );
-            ctx.lineTo(
-                aX - aW * Math.cos(angle - Math.PI / aS),
-                aY - aW * Math.sin(angle - Math.PI / aS)
-            );
-            ctx.fill();
+            let arrowHead = [];
+            arrowHead.push("fill");
+            arrowHead.push({ x: aX, y: aY });
+            arrowHead.push({ 
+                x: aX - aW * Math.cos(angle + Math.PI / aS),
+                y: aY - aW * Math.sin(angle + Math.PI / aS)
+            });
+            arrowHead.push({ 
+                x: aX - aW * Math.cos(angle - Math.PI / aS),
+                y: aY - aW * Math.sin(angle - Math.PI / aS)
+            });
+
+            return [windArrow, arrowHead];
         }
 
-        function drawStrengthIndicator(indicatorNo, indicatorType) {
+        function createStrengthIndicator(indicatorNo, indicatorType) {
             let len = iL;
             if (indicatorType == "short") {
                 len = siL;
@@ -63,26 +87,28 @@
             let startY = indicatorNo == 0 ? mY : mY + gap * indicatorNo * Math.sin(angle);
             let endX = startX + len * Math.sin(angle);
             let endY = startY - len * Math.cos(angle);
-            ctx.beginPath();
-            ctx.moveTo(startX, startY);
-            ctx.lineTo(endX, endY);
-            //ctx.strokeStyle = "rgb(255, 0, 0)"
-            ctx.stroke();
+            let strengthIndicator = [];
+            strengthIndicator.push("stroke");
+            strengthIndicator.push({ x: startX, y: startY });
+            strengthIndicator.push({ x: endX, y: endY });
+
+            return strengthIndicator;
         }
 
-        function drawFlag() {
+        function createFlag() {
             let gX = mX + gap * Math.cos(angle);
             let gY = mY + gap * Math.sin(angle);
             let fmX = mX + (gap / 2 - 5) * Math.cos(angle);
             let fmY = mY + (gap / 2 - 5) * Math.sin(angle);
             let fX = fmX + iL * Math.sin(angle);
             let fY = fmY - iL * Math.cos(angle);
-            ctx.beginPath();
-            ctx.moveTo(mX, mY);
-            ctx.lineTo(fX, fY);
-            ctx.lineTo(gX, gY);
-            //ctx.fillStyle = "rgb(255, 0, 0)"
-            ctx.fill();
+            let flag = [];
+            flag.push("fill");
+            flag.push({ x: mX, y: mY });
+            flag.push({ x: fX, y: fY });
+            flag.push({ x: gX, y: gY });
+
+            return flag;
         }
 
         // Draw the strength indicators
@@ -93,72 +119,159 @@
             // Stille
         } else if (strength <= 1.5) {
             // Flau vind
-            drawWindArrow();
+            guiObjects.push(...createWindArrow());
         } else if (strength <= 3.3) {
             // Svak vind (short indicator)
-            drawWindArrow();
-            drawStrengthIndicator(0, "short")
+            guiObjects.push(...createWindArrow());
+            guiObjects.push(createStrengthIndicator(0, "short"));
         } else if (strength <= 5.4) {
             // Lett bris (large indicator)
-            drawWindArrow();
-            drawStrengthIndicator(0, "large")
+            guiObjects.push(...createWindArrow());
+            guiObjects.push(createStrengthIndicator(0, "large"));
         } else if (strength <= 7.9) {
             // Laber bris (short and large indicators)
-            drawWindArrow();
-            drawStrengthIndicator(0, "large")
-            drawStrengthIndicator(1, "short")
+            guiObjects.push(...createWindArrow());
+            guiObjects.push(createStrengthIndicator(0, "large"));
+            guiObjects.push(createStrengthIndicator(1, "short"));
         } else if (strength <= 10.7) {
             // Frisk bris (two large indicators)
-            drawWindArrow();
-            drawStrengthIndicator(0, "large")
-            drawStrengthIndicator(1, "large")
+            guiObjects.push(...createWindArrow());
+            guiObjects.push(createStrengthIndicator(0, "large"));
+            guiObjects.push(createStrengthIndicator(1, "large"));
         } else if (strength <= 13.8) {
             // Liten kuling (short and two large indicators)
-            drawWindArrow();
-            drawStrengthIndicator(0, "large")
-            drawStrengthIndicator(1, "large")
-            drawStrengthIndicator(2, "short")
+            guiObjects.push(...createWindArrow());
+            guiObjects.push(createStrengthIndicator(0, "large"));
+            guiObjects.push(createStrengthIndicator(1, "large"));
+            guiObjects.push(createStrengthIndicator(2, "short"));
         } else if (strength <= 17.1) {
             // Stiv kuling (three large indicators)
-            drawWindArrow();
-            drawStrengthIndicator(0, "large")
-            drawStrengthIndicator(1, "large")
-            drawStrengthIndicator(2, "large")
+            guiObjects.push(...createWindArrow());
+            guiObjects.push(createStrengthIndicator(0, "large"));
+            guiObjects.push(createStrengthIndicator(1, "large"));
+            guiObjects.push(createStrengthIndicator(2, "large"));
         } else if (strength <= 20.7) {
             // Sterk kuling (short and three large indicators)
-            drawWindArrow();
-            drawStrengthIndicator(0, "large")
-            drawStrengthIndicator(1, "large")
-            drawStrengthIndicator(2, "large")
-            drawStrengthIndicator(3, "short")
+            guiObjects.push(...createWindArrow());
+            guiObjects.push(createStrengthIndicator(0, "large"));
+            guiObjects.push(createStrengthIndicator(1, "large"));
+            guiObjects.push(createStrengthIndicator(2, "large"));
+            guiObjects.push(createStrengthIndicator(3, "short"));
         } else if (strength <= 24.4) {
             // Liten storm (short and four large indicators)
-            drawWindArrow();
-            drawStrengthIndicator(0, "large")
-            drawStrengthIndicator(1, "large")
-            drawStrengthIndicator(2, "large")
-            drawStrengthIndicator(3, "large")
-            drawStrengthIndicator(4, "short")
+            guiObjects.push(...createWindArrow());
+            guiObjects.push(createStrengthIndicator(0, "large"));
+            guiObjects.push(createStrengthIndicator(1, "large"));
+            guiObjects.push(createStrengthIndicator(2, "large"));
+            guiObjects.push(createStrengthIndicator(3, "large"));
+            guiObjects.push(createStrengthIndicator(4, "short"));
         } else if (strength <= 28.4) {
             // Full storm (flag indicator)
-            drawWindArrow();
-            drawFlag();
+            guiObjects.push(...createWindArrow());
+            guiObjects.push(createFlag());
         } else if (strength <= 32.6) {
             // Sterk storm (flag and large indicators)
-            drawWindArrow();
-            drawFlag();
-            drawStrengthIndicator(1, "large")
+            guiObjects.push(...createWindArrow());
+            guiObjects.push(createFlag());
+            guiObjects.push(createStrengthIndicator(1, "large"));
         } else {
             // Orkan (flag and two large indicators)
-            drawWindArrow();
-            drawFlag();
-            drawStrengthIndicator(1, "large")
-            drawStrengthIndicator(2, "large")
-        } 
+            guiObjects.push(...createWindArrow());
+            guiObjects.push(createFlag());
+            guiObjects.push(createStrengthIndicator(1, "large"));
+            guiObjects.push(createStrengthIndicator(2, "large"));
+        }
+
+        return guiObjects;
+    }
+
+    function centerObjects(guiObjects, textVSpace) {
+        if (guiObjects.length === 0) return;
+
+        // Find width and height of all objects
+        const getMinX = (min, val) => {
+            if (val.hasOwnProperty("x")) {
+                return Math.min(val.x, min);
+            }
+            return min;
+        };
+        const getMinY = (min, val) => {
+            if (val.hasOwnProperty("y")) {
+                return Math.min(val.y, min);
+            }
+            return min;
+        };
+        const getMaxX = (max, val) => {
+            if (val.hasOwnProperty("x")) {
+                return Math.max(val.x, max);
+            }
+            return max;
+        };
+        const getMaxY = (max, val) => {
+            if (val.hasOwnProperty("y")) {
+                return Math.max(val.y, max);
+            }
+            return max;
+        };
+        let minX = Number.MAX_VALUE;
+        let minY = Number.MAX_VALUE;
+        let maxX = Number.MIN_VALUE;
+        let maxY = Number.MIN_VALUE;
+        for (let index = 0; index < guiObjects.length; index++) {
+            minX = guiObjects[index].reduce(getMinX, minX);
+            minY = guiObjects[index].reduce(getMinY, minY);
+            maxX = guiObjects[index].reduce(getMaxX, maxX);
+            maxY = guiObjects[index].reduce(getMaxY, maxY);
+        }
+        const totalW = maxX - minX;
+        const totalH = maxY - minY;
+        const idealX = widgetW / 2 - totalW / 2;
+        const idealY = widgetH / 2 - totalH / 2 - textVSpace;
+        const shiftX = idealX - minX + widgetX;
+        const shiftY = idealY - minY + widgetY;
+
+        guiObjects.forEach((obj) => {
+            obj.forEach((p) => {
+                if (p.hasOwnProperty("x")) {
+                    p.x += shiftX;
+                }
+                if (p.hasOwnProperty("y")) {
+                    p.y += shiftY;
+                }
+            });
+        });
+    }
+
+    function drawWindSymbol(strength, angle, textVSpace) {
+        ctx.strokeStyle = "rgb(0, 0, 0)";
+        ctx.fillStyle = "rgb(0, 0, 0)";
+
+        function drawObject(obj) {
+            let type = obj.shift();
+            let startPoint = obj.shift();
+            ctx.beginPath();
+            ctx.moveTo(startPoint.x, startPoint.y);
+            while(obj.length > 0) {
+                let point = obj.shift();
+                ctx.lineTo(point.x, point.y);
+            }
+            if (type === "stroke") {
+                ctx.stroke();
+            } else {
+                ctx.fill();
+            }
+        }
+
+        let guiObjects = createObjects(strength, angle);
+        centerObjects(guiObjects, textVSpace);
+        while(guiObjects.length > 0) {
+            let guiObj = guiObjects.shift();
+            drawObject(guiObj);
+        }
     }
 
     function spinArrow(strength, angle) {
-        drawWindSymbol(strength, angle);
+        drawWidget(strength, angle);
         let nextAngle = angle + 0.2;
         let nextStrength = strength + 0.2;
         if (nextAngle >= 360) {
