@@ -16,7 +16,7 @@ class Wind_Widget(displayio.Group):
         self.strength = float(50)
         self.angle = float(2)
         self.battery_level = 100
-        self.origin_x = 0
+        self.origin_x = WIND_WIDGET_WIDTH / 2
         self.origin_y = WIND_WIDGET_HEIGHT / 2
         self.arrow_length = float(min(WIND_WIDGET_HEIGHT - FONT_SIZE - 2, WIND_WIDGET_WIDTH))
         self.arrow_width = float(14)
@@ -79,7 +79,7 @@ class Wind_Widget(displayio.Group):
         
         total_w = max_x - min_x
         total_h = max_y - min_y
-        ideal_x = 0
+        ideal_x = float(WIND_WIDGET_WIDTH) / float(2) - total_w / float(2)
         ideal_y = float(WIND_WIDGET_HEIGHT) / float(2) - total_h / float(2) - self.description.height
         shift_x = ideal_x - min_x
         shift_y = ideal_y - min_y
