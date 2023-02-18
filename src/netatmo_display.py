@@ -47,19 +47,17 @@ class Netatmo_Display(displayio.Group):
         self.humidity_widget.x = 0
         self.humidity_widget.y = 0
 
+        self.strength = float(0)
+        self.angle = float(0)
         self.wind_widget = wind_widget.Wind_Widget(self.small_font)
         self._icon_group.append(self.wind_widget)
         self.wind_widget.x = 0
-        self.wind_widget.y = 160
-        self.strength = float(0)
-        self.angle = float(0)
+        self.wind_widget.y = 190
 
         self.wind_widget_gusts = wind_widget.Wind_Widget(self.small_font)
         self._icon_group.append(self.wind_widget_gusts)
         self.wind_widget_gusts.x = 160
-        self.wind_widget_gusts.y = 160
-        self.strength = float(0)
-        self.angle = float(0)
+        self.wind_widget_gusts.y = 190
 
         self.temp_widget_top = temperature_widget.Temperature_Widget(cwd, self.small_font, self.tempDec_font, self.tempInt_font)
         self._text_group.append(self.temp_widget_top)
@@ -101,7 +99,9 @@ class Netatmo_Display(displayio.Group):
             self.strength = float(0)
         if self.angle >= 360:
             self.angle = float(0)
-        wind = json.loads('{ "type": "wind", "value": "%fm/s", "angle": %f, "batteryLevel": 88 }' % (self.strength, self.angle))
+        wind = json.loads('{ "type": "wind", "value": "%fm/s", "angle": %f, "batteryLevel": 88, "description": "Vind" }' % (self.strength, self.angle))
+        self.draw_wind(wind)
+        wind = json.loads('{ "type": "wind", "value": "%fm/s", "angle": %f, "batteryLevel": 88, "description": "Kast" }' % (self.strength, self.angle))
         self.draw_wind(wind)
 
     def draw_temperature(self, widget):

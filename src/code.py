@@ -93,12 +93,13 @@ while True:
     # reach to touch but don't update everything on every loop
     if (not loop_refresh) or (time.monotonic() - loop_refresh) > updateTime:
         gfx.draw_time()
+        #gfx.animate_wind()
 
         gc.collect()
         end_mem = gc.mem_free()
         print("Free mem after updates: {}B".format(end_mem))
         print("This iteraton took {}B ".format(start_mem - end_mem))
-        #time.sleep(updateTime)  # wait X seconds before updating anything again
+        time.sleep(updateTime)  # wait X seconds before updating anything again
 
     # update display based on how often the time widget needs to update
     updateTime = .5
