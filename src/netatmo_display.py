@@ -44,7 +44,7 @@ class Netatmo_Display(displayio.Group):
 
         self.humidity_widget = humidity_widget.Humidity_Widget(cwd)
         self._icon_group.append(self.humidity_widget)
-        self.humidity_widget.x = 0
+        self.humidity_widget.x = 40 
         self.humidity_widget.y = 0
 
         self.strength = float(0)
