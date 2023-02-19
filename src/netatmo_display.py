@@ -138,9 +138,13 @@ class Netatmo_Display(displayio.Group):
         x, y, pressure = touch_point
         if self.temp_widget_top.x <= x and self.temp_widget_bottom.y >= y:
             self.temp_widget_top.change_mode()
-        elif self.temp_widget_top.x <= x and self.temp_widget_bottom.y <= y:
+        elif self.temp_widget_bottom.x <= x and self.temp_widget_bottom.y <= y:
             self.temp_widget_bottom.change_mode()
-        elif self.temp_widget_bottom.x >= x and self.time_widget.y <= y:
+        elif self.time_widget.x <= x and self.temp_widget_bottom.x > x and self.time_widget.y <= y:
             self.time_widget.change_mode()
+        elif self.wind_widget.x <= x and self.wind_widget.x + 160 >= x and self.wind_widget.y <= y and self.wind_widget.y + 80 >= y:
+            self.wind_widget.change_mode()
+        elif self.wind_widget_gusts.x <= x and self.temp_widget_bottom.x > x and self.wind_widget_gusts.y <= y and self.wind_widget_gusts.y + 80 >= y:
+            self.wind_widget_gusts.change_mode()
         else:
             self.humidity_widget.change_mode()
