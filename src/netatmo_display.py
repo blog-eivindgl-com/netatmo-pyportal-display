@@ -42,7 +42,7 @@ class Netatmo_Display(displayio.Group):
         self.tempDec_font.load_glyphs(b'0123456789CM-.: ')
         self.tempDec_font.load_glyphs(('°',))
 
-        self.humidity_widget = humidity_widget.Humidity_Widget(cwd)
+        self.humidity_widget = humidity_widget.Humidity_Widget(cwd, self.small_font)
         self._icon_group.append(self.humidity_widget)
         self.humidity_widget.x = 40 
         self.humidity_widget.y = 0
