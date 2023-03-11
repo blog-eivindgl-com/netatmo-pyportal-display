@@ -99,7 +99,7 @@ while True:
         end_mem = gc.mem_free()
         print("Free mem after updates: {}B".format(end_mem))
         print("This iteraton took {}B ".format(start_mem - end_mem))
-        time.sleep(updateTime)  # wait X seconds before updating anything again
+        # time.sleep(updateTime)
 
     # update display based on how often the time widget needs to update
     updateTime = .5
