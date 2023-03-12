@@ -63,6 +63,7 @@ class Netatmo_Display(displayio.Group):
         self._text_group.append(self.temp_widget_top)
         self.temp_widget_top.x = DISPLAY_WIDTH - TEMP_WIDGET_WIDTH
         self.temp_widget_top.y = 0
+        self.temp_widget_top.default_module = "Stua"
 
         self.temp_widget_bottom = temperature_widget.Temperature_Widget(cwd, self.small_font, self.tempDec_font, self.tempInt_font)
         self._text_group.append(self.temp_widget_bottom)
@@ -105,9 +106,9 @@ class Netatmo_Display(displayio.Group):
         self.draw_wind(wind)
 
     def draw_temperature(self, widget):
-        if widget['description'] == "Vestveggen ute":
+        if widget['description'] == "Vestveggen ute" or widget['description'] == "Østveggen ute":
             self.temp_widget_bottom.draw_widget(widget)
-        elif widget['description'] == "Stua":
+        elif widget['description'] == "Stua" or widget['description'] == "Boden":
             self.temp_widget_top.draw_widget(widget)
     
     def draw_humidity(self, widget):
