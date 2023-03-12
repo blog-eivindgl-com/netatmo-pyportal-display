@@ -18,6 +18,7 @@ class Temperature_Widget(displayio.Group):
         self.selected_module = None
         self.selected_module_at = None
         self.has_cycled_through_module = False
+        self.default_module = None
         
         self._flatIcon = cwd + "/icons/wi-trend-flat.bmp"
         self._upIcon = cwd + "/icons/wi-trend-up.bmp"
@@ -52,7 +53,15 @@ class Temperature_Widget(displayio.Group):
         if widget:
             self.update_module_data(widget)
 
-        if self.selected_module_at == None or (datetime.now() - self.selected_module_at).total_seconds() > 360:
+        if self.selected_module == None and self.default_module != None:
+            print("Setting default module %s" % self.default_module)
+            self.selected_module = self.find_default_module()
+            if self.selected_module == None:
+                self.display_module(self.modules[0][1]) # couldn't find the default module, so display the first one
+            else:
+                print("Default module was found at index %s" % self.selected_module)
+                self.display_module(self.modules[self.selected_module][1])
+        elif self.default_module == None and (self.selected_module_at == None or (datetime.now() - self.selected_module_at).total_seconds() > 360):
             self.display_module(self.find_module_with_lowest_temperature())
         else:
             self.display_module(self.modules[self.selected_module][1])
@@ -75,6 +84,12 @@ class Temperature_Widget(displayio.Group):
                 self.set_icon(self._downIcon)
             else:
                 self.set_icon(self._flatIcon)
+
+    def find_default_module(self):
+        for i in range(len(self.modules)):
+            if self.modules[i][1]['description'] == self.default_module:
+                return i
+        return None
 
     def update_module_data(self, widget):
         isReplaced = False
