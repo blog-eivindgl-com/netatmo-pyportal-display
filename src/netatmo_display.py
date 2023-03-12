@@ -83,14 +83,15 @@ class Netatmo_Display(displayio.Group):
         self._text_group.append(self.error_text)
 
     def draw_display(self, weather):
-        weather = json.loads(weather)
-        for widget in weather['widgets']:
-            if widget['type'] == "temperature":
-                self.draw_temperature(widget)
-            elif widget['type'] == "humidity":
-                self.draw_humidity(widget)
-            elif widget['type'] == "wind":
-                self.draw_wind(widget)
+        if weather:
+            weather = json.loads(weather)
+            for widget in weather['widgets']:
+                if widget['type'] == "temperature":
+                    self.draw_temperature(widget)
+                elif widget['type'] == "humidity":
+                    self.draw_humidity(widget)
+                elif widget['type'] == "wind":
+                    self.draw_wind(widget)
 
     def animate_wind(self):
         # TODO: remove this fake wind widget
