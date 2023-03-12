@@ -105,7 +105,7 @@ class Netatmo_Display(displayio.Group):
         self.draw_wind(wind)
 
     def draw_temperature(self, widget):
-        if widget['description'] == "Vestveggen ute":
+        if widget['description'] == "Vestveggen ute" or widget['description'] == "Østveggen ute":
             self.temp_widget_bottom.draw_widget(widget)
         elif widget['description'] == "Stua":
             self.temp_widget_top.draw_widget(widget)
