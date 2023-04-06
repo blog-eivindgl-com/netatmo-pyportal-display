@@ -2,6 +2,7 @@ import sys
 import board
 import time
 import gc
+import supervisor
 from adafruit_pyportal import PyPortal
 import adafruit_touchscreen
 cwd = ("/"+__file__).rsplit('/', 1)[0] # the current working directory (where this file is)
@@ -64,7 +65,7 @@ while True:
             localtile_refresh = time.monotonic()
         except RuntimeError as e:
             print("Some error occured, retrying! -", e)
-            continue
+            supervisor.reload()
 
     # only query the weather every 10 minutes (and on first run) #> 600
     if (not weather_refresh) or (time.monotonic() - weather_refresh) > 60:
@@ -78,11 +79,11 @@ while True:
         except RuntimeError as re:
             print("Some error occured, retrying! -", re)
             gfx.draw_error()
-            continue
+            supervisor.reload()
         except TimeoutError as te:
             print("Timeout - ", te)
             gfx.draw_error()
-            continue
+            supervisor.reload()
 
     # react to screen touch
     touch_point = touch.touch_point
