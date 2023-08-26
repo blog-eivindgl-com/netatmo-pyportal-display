@@ -2,6 +2,9 @@ import sys
 import board
 import time
 import gc
+import busio
+from digitalio import DigitalInOut
+from adafruit_esp32spi import adafruit_esp32spi
 from adafruit_pyportal import PyPortal
 import adafruit_touchscreen
 cwd = ("/"+__file__).rsplit('/', 1)[0] # the current working directory (where this file is)
@@ -25,7 +28,14 @@ beep_sound = cwd+"/sounds/beep.wav"
 # Initialize the pyportal object and let us know what data to fetch and where
 # to display it
 initial_mem = gc.mem_free()
+SPI = busio.SPI(board.SCK, board.MOSI, board.MISO)
+ESP32_CS = DigitalInOut(board.ESP_CS)
+ESP32_READY = DigitalInOut(board.ESP_BUSY)
+ESP32_RESET = DigitalInOut(board.ESP_RESET)
+esp = adafruit_esp32spi.ESP_SPIcontrol(SPI, ESP32_CS, ESP32_READY, ESP32_RESET)
 pyportal = PyPortal(
+                    esp=esp,
+                    external_spi=SPI,
                     url=DATA_SOURCE,
                     status_neopixel=board.NEOPIXEL,
                     default_bg=0x000000)
@@ -62,8 +72,12 @@ while True:
             print("Getting time from internet!")
             pyportal.get_local_time()
             localtile_refresh = time.monotonic()
-        except RuntimeError as e:
+        except (ValueError, RuntimeError, ConnectionError, OSError) as e:
             print("Some error occured, retrying! -", e)
+            esp.reset()
+            esp.disconnect()
+            pyportal.network.connect()
+            time.sleep(5)
             continue
 
     # only query the weather every 10 minutes (and on first run) #> 600
@@ -75,9 +89,12 @@ while True:
             gfx.draw_display(value)
             gfx.clear_error()
             weather_refresh = time.monotonic()
-        except RuntimeError as re:
-            print("Some error occured, retrying! -", re)
-            gfx.draw_error()
+        except (ValueError, RuntimeError, ConnectionError, OSError) as e:
+            print("Some error occured, retrying! -", e)
+            esp.reset()
+            esp.disconnect()
+            pyportal.network.connect()
+            time.sleep(5)
             continue
         except TimeoutError as te:
             print("Timeout - ", te)
