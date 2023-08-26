@@ -16,7 +16,7 @@ except ImportError:
     raise
 
 # Set up where we'll be fetching data from
-DATA_SOURCE = "http://192.168.1.104:8082/api/display"
+DATA_SOURCE = secrets['netatmo-proxy-url']
 DATA_LOCATION = []
 
 # Prepare sounds
