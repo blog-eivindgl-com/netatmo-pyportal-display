@@ -20,7 +20,6 @@ except ImportError:
 
 # Set up where we'll be fetching data from
 DATA_SOURCE = secrets['netatmo-proxy-url']
-DATA_LOCATION = []
 
 # Prepare sounds
 beep_sound = cwd+"/sounds/beep.wav"
@@ -36,9 +35,8 @@ esp = adafruit_esp32spi.ESP_SPIcontrol(SPI, ESP32_CS, ESP32_READY, ESP32_RESET)
 pyportal = PyPortal(
                     esp=esp,
                     external_spi=SPI,
-                    url=DATA_SOURCE,
-                    status_neopixel=board.NEOPIXEL,
-                    default_bg=0x000000)
+                    default_bg=0x000000, 
+                    debug=False)
 touch = adafruit_touchscreen.Touchscreen(
                     board.TOUCH_XL, 
                     board.TOUCH_XR, 
@@ -58,6 +56,7 @@ weather_refresh = None
 loop_refresh = None
 reload_count = 0
 updateTime = .5
+pyportal.network.connect()
 while True:
     # reach to touch but don't update everything on every loop
     if (not loop_refresh) or (time.monotonic() - loop_refresh) > updateTime:
@@ -72,7 +71,7 @@ while True:
             print("Getting time from internet!")
             pyportal.get_local_time()
             localtile_refresh = time.monotonic()
-        except (ValueError, RuntimeError, ConnectionError, OSError) as e:
+        except (ValueError, RuntimeError, ConnectionError, OSError, TimeoutError) as e:
             print("Some error occured, retrying! -", e)
             esp.reset()
             esp.disconnect()
@@ -82,24 +81,28 @@ while True:
 
     # only query the weather every 10 minutes (and on first run) #> 600
     if (not weather_refresh) or (time.monotonic() - weather_refresh) > 60:
-        try:
-            value = pyportal.fetch()
-            reload_count = reload_count + 1
-            print("#%d: Response is" % reload_count, value)
-            gfx.draw_display(value)
-            gfx.clear_error()
-            weather_refresh = time.monotonic()
-        except (ValueError, RuntimeError, ConnectionError, OSError) as e:
-            print("Some error occured, retrying! -", e)
-            esp.reset()
-            esp.disconnect()
-            pyportal.network.connect()
-            time.sleep(5)
-            continue
-        except TimeoutError as te:
-            print("Timeout - ", te)
-            gfx.draw_error()
-            continue
+        while True:
+            try:
+                print("Fetching data from API...")
+                headers = {
+                    "Accept": "application/json",
+                    "Content-Length": "0"
+                }
+                response = pyportal.network.requests.get(DATA_SOURCE, headers=headers)
+                value = response.json()
+                response.close()
+                reload_count = reload_count + 1
+                print("#%d: Response is" % reload_count, value)
+                gfx.draw_display(value)
+                gfx.clear_error()
+                weather_refresh = time.monotonic()
+                break
+            except (ValueError, RuntimeError, ConnectionError, OSError, TimeoutError) as e:
+                print("Some error occured, retrying! -", e)
+                esp.reset()
+                esp.disconnect()
+                pyportal.network.connect()
+                time.sleep(5)
 
     # react to screen touch
     touch_point = touch.touch_point
