@@ -18,6 +18,16 @@ except ImportError:
     print("WiFi secrets are kept in secrets.py, please add them there!")
     raise
 
+def reset_and_try_reconnect(e, esp, pyportal):
+    try:
+        print("Some error occured, retrying! -", e)
+        esp.reset()
+        esp.disconnect()
+        pyportal.network.connect()
+        time.sleep(5)
+    except (ValueError, RuntimeError, ConnectionError, OSError, TimeoutError) as e:
+        reset_and_try_reconnect(e, esp, pyportal)
+
 # Set up where we'll be fetching data from
 DATA_SOURCE = secrets['netatmo-proxy-url']
 
@@ -72,11 +82,7 @@ while True:
             pyportal.get_local_time()
             localtile_refresh = time.monotonic()
         except (ValueError, RuntimeError, ConnectionError, OSError, TimeoutError) as e:
-            print("Some error occured, retrying! -", e)
-            esp.reset()
-            esp.disconnect()
-            pyportal.network.connect()
-            time.sleep(5)
+            reset_and_try_reconnect(e, esp, pyportal)
             continue
 
     # only query the weather every 10 minutes (and on first run) #> 600
@@ -98,11 +104,8 @@ while True:
                 weather_refresh = time.monotonic()
                 break
             except (ValueError, RuntimeError, ConnectionError, OSError, TimeoutError) as e:
-                print("Some error occured, retrying! -", e)
-                esp.reset()
-                esp.disconnect()
-                pyportal.network.connect()
-                time.sleep(5)
+                reset_and_try_reconnect(e, esp, pyportal)
+                continue
 
     # react to screen touch
     touch_point = touch.touch_point
